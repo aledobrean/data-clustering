@@ -7,6 +7,7 @@ import ada.app.util.CoordinatesParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -14,23 +15,28 @@ import java.util.List;
 
 @Service
 public class BoxService {
-
+    private static final String SOLUTION_NAME = "proximity_solution";
     private final Logger logger = LoggerFactory.getLogger(BoxService.class);
     private final CoordinatesParser coordinatesParser;
+    @Value("${solution.file-path}")
+    private String filePath;
+    @Value("${solution.distance-threshold}")
+    private double distanceThreshold;
 
     @Autowired
     public BoxService(CoordinatesParser coordinatesParser) {
         this.coordinatesParser = coordinatesParser;
     }
 
-    public List<List<Box>> processInput(String filePath, double distanceThreshold) {
+    public List<List<Box>> solve() {
         List<Box> inputBoxes = coordinatesParser.parseJson(filePath);
-        logger.info("event=process_input, number_of_boxes={}, distanceThreshold={}", inputBoxes.size(), distanceThreshold);
+        logger.info("solution={}, event=process_input, number_of_boxes={}, distanceThreshold={}", SOLUTION_NAME, inputBoxes.size(),
+                distanceThreshold);
         try {
             return groupBoxes(inputBoxes, distanceThreshold);
         } catch (BoxServiceException e) {
-            logger.error("event=process_input_failed, reason=invalid_distance_threshold, distanceThreshold={} [{}]",
-                    distanceThreshold, e.getMessage());
+            logger.error("solution={}, event=process_input_failed, reason=invalid_distance_threshold, " + "distanceThreshold={} [{}]",
+                    SOLUTION_NAME, distanceThreshold, e.getMessage());
         }
         return List.of();
     }
@@ -46,7 +52,7 @@ public class BoxService {
         List<List<Box>> groups = new ArrayList<>();
         boolean[] visited = new boolean[inputBoxes.size()];
         if (distanceThreshold < 0) {
-            logger.info("event=process_input_failed, reason=invalid_distance_threshold");
+            logger.info("solution={}, event=process_input_failed, reason=invalid_distance_threshold", SOLUTION_NAME);
             throw new BoxServiceException("Distance threshold negative!");
         }
 
@@ -61,12 +67,12 @@ public class BoxService {
                 groups.add(group);
             }
         }
-        logger.info("event=process_input, number_of_groups={}", groups.size());
+        logger.info("solution={}, event=process_input, number_of_groups={}", SOLUTION_NAME, groups.size());
         return groups;
     }
 
     /**
-     * Recursively finds the closest box, contain by a distance threshold.
+     * Recursively finds the closest box, constraint by a distance threshold.
      *
      * @param boxes             - boxes from input
      * @param index             - current box index

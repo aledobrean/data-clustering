@@ -13,3 +13,27 @@ a list of groups
 - The boxes contain only the coordinates, without the content, so the grouping can be done only based on coordinates.
 - The boxes can be considered to be oriented at zero degrees.
 - The order of the boxes is random.
+
+# **Solutions:**
+
+## **Solution #1 - Proximity Solution:**
+
+- Service name: BoxService
+- Iterates over the input boxes, splits into groups relative to a specified distance.
+- Uses an algorithm that recursively finds the closest box, constraint by a distance threshold and adds it to a group.
+
+Run command:
+```text
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dapp.use-proximity-solution=true"
+other arguments: 
+-Dsolution.file-path=src/main/resources/static/input.json
+-Dsolution.distance-threshold=65
+```
+
+## **Solution #2 - Clustering Solution:**
+- Service name: ClusteringService
+- Used Apache Spark to create clusters of boxes.
+    * It takes @numberOfClusters random coordinates from a json file as cluster centers
+    * then it forms clusters based on the closest coordinates to these center
+    * then it calculates the mean distance and create a new center point aka the center of the cluster
+    * then it repeats these steps until the deviation is small enough.
