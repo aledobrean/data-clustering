@@ -16,6 +16,14 @@ a list of groups
 
 # **Solutions:**
 
+For java 17 the following VM options are needed, because Apache Spark is not fully compatible yet:
+```text
+--add-opens=java.base/sun.nio.ch=ALL-UNNAMED 
+--add-opens=java.base/java.nio=ALL-UNNAMED 
+--add-opens=java.base/java.lang.invoke=ALL-UNNAMED 
+--add-opens=java.base/java.util=ALL-UNNAMED
+```
+
 ## **Solution #1 - Proximity Solution:**
 
 - Service name: BoxService
@@ -25,7 +33,7 @@ a list of groups
 Run command:
 ```text
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dapp.use-proximity-solution=true"
-other arguments: 
+other arguments that can be overridden: 
 -Dsolution.file-path=src/main/resources/static/input.json
 -Dsolution.distance-threshold=65
 ```
@@ -33,7 +41,16 @@ other arguments:
 ## **Solution #2 - Clustering Solution:**
 - Service name: ClusteringService
 - Used Apache Spark to create clusters of boxes.
-    * It takes @numberOfClusters random coordinates from a json file as cluster centers
-    * then it forms clusters based on the closest coordinates to these center
-    * then it calculates the mean distance and create a new center point aka the center of the cluster
-    * then it repeats these steps until the deviation is small enough.
+  * It takes @numberOfClusters random coordinates from a json file as cluster centers
+  * then it forms clusters based on the closest coordinates to these center
+  * then it calculates the mean distance and create a new center point aka the center of the cluster
+  * then it repeats these steps until the deviation for @maxIterations times
+
+Run command:
+```text
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dapp.use-proximity-solution=false"
+other arguments that can be overridden: 
+-Dsolution.file-path=src/main/resources/static/input.json
+-Dsolution.clusters=5
+-Dsolution.max-iterations=20
+```
